@@ -56,7 +56,7 @@ public class SnowFlake {
      * 获取16进制字符串
      */
     public static String UUID() {
-        return Long.toHexString(snowFlake.nextId());
+        return String.format("%016x", snowFlake.nextId());
     }
 
     /**
