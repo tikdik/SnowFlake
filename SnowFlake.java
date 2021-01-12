@@ -1,5 +1,3 @@
-import java.util.concurrent.TimeUnit;
-
 /**
  * twitter的snowflake算法 -- java实现
  *
@@ -67,26 +65,26 @@ public class SnowFlake {
      * @return
      */
     public synchronized long nextId() {
-        long currentSecond = getCurrentSecond();
-        if (currentSecond < lastTimestamp) {
+        long currentTimestamp = getCurrentTimestamp();
+        if (currentTimestamp < lastTimestamp) {
             throw new RuntimeException("Clock moved backwards.  Refusing to generate id");
         }
 
-        if (currentSecond == lastTimestamp) {
+        if (currentTimestamp == lastTimestamp) {
             //相同毫秒内，序列号自增
             sequence = (sequence + 1) & MAX_SEQUENCE;
             //同一毫秒的序列数已经达到最大
             if (sequence == 0L) {
-                currentSecond = getNextSecond(lastTimestamp);
+                currentTimestamp = getNextSecond(lastTimestamp);
             }
         } else {
             //不同毫秒内，序列号置为0
             sequence = 0L;
         }
 
-        lastTimestamp = currentSecond;
+        lastTimestamp = currentTimestamp;
         //时间戳部分 | 机器标识部分 | 序列号部分
-        return (currentSecond - START_TIMESTAMP) << TIMESTAMP_LEFT
+        return (currentTimestamp - START_TIMESTAMP) << TIMESTAMP_LEFT
                 | machineId << MACHINE_LEFT
                 | sequence;
     }
@@ -95,19 +93,18 @@ public class SnowFlake {
      * Get next millisecond
      */
     private long getNextSecond(long lastTimestamp) {
-        long timestamp = getCurrentSecond();
+        long timestamp = getCurrentTimestamp();
         while (timestamp <= lastTimestamp) {
-            timestamp = getCurrentSecond();
+            timestamp = getCurrentTimestamp();
         }
 
         return timestamp;
     }
 
     /**
-     * Get current second，单位还是毫秒
+     * Get current millisecond，
      */
-    private long getCurrentSecond() {
-        long currentSecond = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
-        return currentSecond;
+    private long getCurrentTimestamp() {
+        return System.currentTimeMillis();
     }
 }
